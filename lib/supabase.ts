@@ -1,0 +1,5 @@
+export const configured=()=>Boolean(process.env.SUPABASE_URL&&process.env.SUPABASE_SERVICE_ROLE_KEY);
+export function config(){const url=process.env.SUPABASE_URL?.replace(/\/$/,'');const key=process.env.SUPABASE_SERVICE_ROLE_KEY;if(!url||!key)throw new Error('Supabase is not configured');return {url,key};}
+export async function backend(path:string,init:RequestInit={}){const {url,key}=config();const response=await fetch(url+path,{...init,cache:'no-store',headers:{apikey:key,Authorization:`Bearer ${key}`,...init.headers}});if(!response.ok)throw new Error(`Storage request failed: ${response.status}`);return response;}
+export async function selectRows<T>(table:string,query=''):Promise<T[]>{return (await backend(`/rest/v1/${table}?${query}`)).json();}
+export async function upsert(table:string,value:unknown,conflict:string){await backend(`/rest/v1/${table}?on_conflict=${conflict}`,{method:'POST',headers:{'Content-Type':'application/json',Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify(value)});}

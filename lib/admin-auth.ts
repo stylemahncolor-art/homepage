@@ -1,0 +1,4 @@
+import {cookies} from 'next/headers';
+export const sessionCookie='ipib-admin-session';
+export function sameOrigin(request:Request){const origin=request.headers.get('origin');if(!origin)return false;try{const source=new URL(origin);return ['https:','http:'].includes(source.protocol)&&source.host===(request.headers.get('host')||new URL(request.url).host);}catch{return false;}}
+export async function isAdmin(){const token=(await cookies()).get(sessionCookie)?.value;const url=process.env.SUPABASE_URL;const key=process.env.SUPABASE_ANON_KEY;const email=process.env.ADMIN_EMAIL?.toLowerCase();if(!token||!url||!key||!email)return false;try{const r=await fetch(`${url}/auth/v1/user`,{headers:{apikey:key,Authorization:`Bearer ${token}`},cache:'no-store'});if(!r.ok)return false;const user=await r.json();return Boolean(user.email_confirmed_at&&user.email?.toLowerCase()===email);}catch{return false;}}

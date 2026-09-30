@@ -6,11 +6,15 @@
     "node": ">=22.13.0"
   },
   "scripts": {
-    "dev": "next dev",
-    "build": "next build --webpack",
-    "start": "next start",
+    "dev": "vite",
+    "build": "vite build",
+    "start": "vite preview",
     "typecheck": "tsc --noEmit",
-    "data:import": "node --env-file=.env.local scripts/import-data.mjs"
+    "data:import": "node --env-file=.env.local scripts/import-data.mjs",
+    "preview": "vite preview",
+    "deploy": "pnpm run build && wrangler deploy",
+    "deploy:check": "pnpm run build && wrangler deploy --dry-run",
+    "check:compat": "vinext check"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",

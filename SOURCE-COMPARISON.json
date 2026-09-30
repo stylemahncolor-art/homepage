@@ -1,0 +1,39 @@
+{
+  "source_zip": "IPIB-Vercel-Migration-20260930.zip",
+  "original_files_unchanged": 272,
+  "changes": [
+    {
+      "file": ".gitignore",
+      "status": "modified"
+    },
+    {
+      "file": "README.md",
+      "status": "modified"
+    },
+    {
+      "file": "next-env.d.ts",
+      "status": "modified"
+    },
+    {
+      "file": "package.json",
+      "status": "modified"
+    },
+    {
+      "file": "pnpm-workspace.yaml",
+      "status": "modified"
+    },
+    {
+      "file": "scripts/verify-admin-mock.py",
+      "status": "modified"
+    },
+    {
+      "file": "scripts/verify-public.py",
+      "status": "modified"
+    },
+    {
+      "file": "vercel.json",
+      "status": "removed"
+    }
+  ],
+  "app_components_public_lib_content_unchanged": true
+}

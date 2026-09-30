@@ -1,0 +1,1 @@
+ALTER TABLE `news` ADD `gallery` text DEFAULT '[]' NOT NULL;

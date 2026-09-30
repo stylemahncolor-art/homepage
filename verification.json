@@ -1,0 +1,25 @@
+[
+  {
+    "sitemap_urls": 80,
+    "per_locale": {
+      "kr": 20,
+      "en": 20,
+      "cn": 20,
+      "jp": 20
+    }
+  },
+  {
+    "all_sitemap_pages_200_and_naver_meta": 80
+  },
+  {
+    "unauthorized_and_forged_old_auth_headers": "blocked"
+  },
+  {
+    "migrated_images": 4,
+    "admin_login_and_noindex": "pass"
+  },
+  {
+    "mock_supabase_integration": "login rejection/success, secure cookie, authenticated read/write, CSRF block PASS",
+    "real_supabase_account": "not configured; not tested"
+  }
+]
