@@ -1,0 +1,10 @@
+IPIB GitHub / Vercel 프로젝트
+
+1. ZIP을 압축 해제합니다. ZIP 자체를 GitHub에 올리지 마세요.
+2. 압축 해제한 파일을 비공개 GitHub 저장소 최상단에 올립니다.
+3. package.json, app, public, vercel.json이 저장소 최상단에 보여야 합니다.
+4. .gitignore와 .env.example도 포함하세요. node_modules, .next, .env.local은 올리지 마세요.
+5. Vercel에서 저장소를 Import하고 Next.js로 배포합니다.
+6. 관리자 기능을 사용하려면 README.md에 따라 Supabase와 환경변수를 설정합니다.
+
+기존 사이트와 도메인은 변경하지 않았습니다. 실제 Vercel 및 Supabase 연동 검증은 계정 설정 후 필요합니다.
