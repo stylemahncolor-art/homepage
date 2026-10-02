@@ -439,3 +439,9 @@ main h1,main h2,main h3{overflow-wrap:break-word}
  .page-inquiry .inquiry-primary,.page-inquiry .inquiry-secondary{box-sizing:border-box;width:100%;min-width:0;min-height:56px;height:100%;margin:0;padding:12px 8px;gap:6px;font-size:14px;line-height:1.5;text-align:center}
  .page-inquiry a svg{flex-shrink:0;width:18px;height:18px}
 }
+
+/* Hong Kong portraits: match the Korea cards with close-up cutouts on pink. */
+.branch-instructor .instructor-photo-biance-chan img,
+.branch-instructor .instructor-photo-sonia-wong img{
+ position:absolute;left:50%;top:-3%;width:auto;max-width:none;height:130%;object-fit:contain;object-position:center top;transform:translateX(-50%);transform-origin:center top
+}
