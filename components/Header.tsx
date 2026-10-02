@@ -1,6 +1,6 @@
 'use client';
 import Link from './PageLink';
-import Image from 'next/image';
+import Image from './ResponsiveImage';
 import {usePathname} from 'next/navigation';
 import {useRef,useState} from 'react';
 import {List,X,Globe} from '@phosphor-icons/react';

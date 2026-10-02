@@ -1,3 +1,4 @@
+import ResponsiveImage from './ResponsiveImage';
 import type {Locale} from '@/content/site';
 const profiles=[
   {
@@ -136,4 +137,4 @@ const profiles=[
     }
   }
 ];
-export function SeoulInstructors({locale}:{locale:Locale}){return <div className="branch-instructors">{profiles.map(p=><article className="branch-instructor" key={p.id}><div className={`instructor-photo instructor-photo-${p.id}`}><img src={`/assets/${p.id}${p.id==='xu-xiaoxin'?'-cutout':''}.png`} alt={p.name[locale]} width={160} height={210}/></div><div className="instructor-content"><header className="instructor-heading"><h5>{p.name[locale]}</h5><p className="instructor-position">{p.role[locale]}</p></header><ul className="instructor-career">{p.lines[locale].map(line=><li key={line}>{line}</li>)}</ul></div></article>)}</div>}
+export function SeoulInstructors({locale}:{locale:Locale}){return <div className="branch-instructors">{profiles.map(p=><article className="branch-instructor" key={p.id}><div className={`instructor-photo instructor-photo-${p.id}`}><ResponsiveImage sizes="(max-width:600px) 130px, 190px" src={`/assets/${p.id}${p.id==='xu-xiaoxin'?'-cutout':''}.png`} alt={p.name[locale]} width={160} height={210}/></div><div className="instructor-content"><header className="instructor-heading"><h5>{p.name[locale]}</h5><p className="instructor-position">{p.role[locale]}</p></header><ul className="instructor-career">{p.lines[locale].map(line=><li key={line}>{line}</li>)}</ul></div></article>)}</div>}

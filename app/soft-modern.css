@@ -270,3 +270,12 @@
 :is(.home,.detail-page) .partnership .partnership-cta:hover{background:#104d76;border-color:#104d76;color:#fff;box-shadow:0 6px 16px #17649625}
 :is(.home,.detail-page) .partnership .partnership-cta:focus-visible{outline:3px solid #e7389b;outline-offset:4px;color:#fff}
 @media(max-width:600px){:is(.home,.detail-page) .partnership{padding-block:32px}:is(.home,.detail-page) .partnership-grid{grid-template-columns:1fr;gap:20px}:is(.home,.detail-page) .partnership .partnership-cta{width:100%;font-size:15px;min-height:54px}}
+
+/* Keep the approved scene crops while allowing image editing and WebP variants. */
+.home .field-scene-crop{background-image:none}
+.home .field-scene-crop>img{position:absolute;max-width:none;width:314.7541%;height:316.0494%;object-fit:fill}
+.home .field-scene-0 .field-scene-crop>img{left:-4.9179%;top:-46.3009%}
+.home .field-scene-1 .field-scene-crop>img{left:-4.9179%;top:-175.9305%}
+.home .field-scene-2 .field-scene-crop>img{left:-108.408%;top:-46.3009%}
+.home .field-scene-3 .field-scene-crop>img{left:-108.408%;top:-175.9305%}
+.home .field-scene-4 .field-scene-crop>img{width:312.1951%;height:140.274%;left:-208.1209%;top:-20.5478%}

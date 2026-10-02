@@ -16,7 +16,7 @@ export async function getPageEdit(page:string,locale:Locale):Promise<PageEdit|nu
  if(!configured())return null;
  try {const rows=await selectRows<PageEdit>('page_content',`page=eq.${encodeURIComponent(page)}&locale=eq.${locale}`);const row=rows[0];return row?{...row,title:normalizeCopy(row.title),description:normalizeCopy(row.description)}:null;}catch{return null;}
 }
-export async function getPageEdits():Promise<PageEdit[]>{return selectRows<PageEdit>('page_content','order=page,locale');}
+export async function getPageEdits():Promise<PageEdit[]>{return selectRows<PageEdit>('page_content','page=not.like.visual:*&order=page,locale');}
 export async function savePageEdit(value:PageEdit){await upsert('page_content',{...value,updated_at:new Date().toISOString()},'page,locale');}
 export async function getNews(includeDrafts=false):Promise<NewsEdit[]>{
  let order:string[]=JSON.parse(snapshotOrder[0]?.slugs||'[]');

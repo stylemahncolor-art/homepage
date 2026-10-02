@@ -1,3 +1,4 @@
+import ResponsiveImage from './ResponsiveImage';
 import type {Locale} from '@/content/site';
 
 const profiles = [
@@ -16,7 +17,7 @@ const profiles = [
 export function HongKongInstructors({locale}: {locale: Locale}) {
   return <div className="branch-instructors">{profiles.map(profile =>
     <article className="branch-instructor" key={profile.id}>
-      <div className={`instructor-photo instructor-photo-${profile.id}`}><img src={profile.image} alt={profile.name} width={136} height={184} loading="lazy" /></div>
+      <div className={`instructor-photo instructor-photo-${profile.id}`}><ResponsiveImage sizes="(max-width:600px) 130px, 190px" src={profile.image} alt={profile.name} width={136} height={184} loading="lazy" /></div>
       <div className="instructor-content">
         <header className="instructor-heading"><h5>{profile.name}</h5></header>
         <ul className="instructor-career">{profile[locale === 'kr' ? 'kr' : 'en'].map(line => <li key={line}>{line}</li>)}</ul>

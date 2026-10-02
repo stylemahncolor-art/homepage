@@ -1,5 +1,5 @@
 import {trainingDimensions} from '@/content/training-dimensions';
-import Image from 'next/image';
+import Image from './ResponsiveImage';
 import Link from './PageLink';
 import {ArrowUpRight,ChatCircleDots} from '@phosphor-icons/react/dist/ssr';
 import {getDictionary} from '@/content';

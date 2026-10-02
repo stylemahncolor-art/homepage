@@ -1,4 +1,4 @@
-import Image from 'next/image';
+import Image from './ResponsiveImage';
 import {levels,educationSystem} from '@/content/education-system';
 import type {Locale} from '@/content/site';
 export function EducationSystem({locale,compact=false}:{locale:Locale;compact?:boolean}){
