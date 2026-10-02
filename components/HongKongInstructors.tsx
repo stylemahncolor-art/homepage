@@ -19,7 +19,9 @@ export function HongKongInstructors({locale}: {locale: Locale}) {
     <article className="branch-instructor" key={profile.id}>
       <div className={`instructor-photo instructor-photo-${profile.id}`}><ResponsiveImage sizes="(max-width:600px) 130px, 190px" src={profile.image} alt={profile.name} width={136} height={184} loading="lazy" /></div>
       <div className="instructor-content">
-        <header className="instructor-heading"><h5>{profile.name}</h5></header>
+        <header className="instructor-heading"><h5>{profile.name}</h5><p className="instructor-position">{profile.id==='biance-chan'
+          ? ({kr:'HAN Beauty 중국·홍콩 대표',en:'Founder & CEO of HAN Beauty China & Hong Kong',cn:'HAN Beauty 中国及香港创始人兼首席执行官',jp:'HAN Beauty 中国・香港の創設者・代表'})[locale]
+          : ({kr:'Sesamism 설립자 · 패션 전문가',en:'Founder of Sesamism · Fashion professional',cn:'Sesamism 创始人 · 时尚专业人士',jp:'Sesamism 創設者・ファッション専門家'})[locale]}</p></header>
         <ul className="instructor-career">{profile[locale === 'kr' ? 'kr' : 'en'].map(line => <li key={line}>{line}</li>)}</ul>
       </div>
     </article>
