@@ -19,7 +19,7 @@ export function Home({locale,edit,news}:{locale:Locale;edit:PageEdit|null;news:N
  return <main id="main" className="home">
   <section className="editorial-hero wrap">
    {locale==='kr' ? <div className="approved-hero">
-    <div className="approved-hero-art"><ResponsiveImage src="/assets/ipib-approved-hero-white.png" width={1536} height={1024} alt="" fetchPriority="high"/></div>
+    <div className="approved-hero-art"><ResponsiveImage src="/assets/ipib-approved-hero-white.png" sizes="(max-width:1280px) 100vw, 1280px" width={1536} height={1024} alt="" fetchPriority="high"/></div>
     <div className="approved-hero-accessible"><h1>{t.hero}</h1><p><BrandText text={t.intro}/></p></div>
     <More locale={locale} to="about">{d.aboutLink}</More>
    </div> : <>
