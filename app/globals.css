@@ -275,7 +275,7 @@
 /* Compact, swipeable news cards keep source photographs at a restrained size. */
 .home-news-carousel{min-width:0}.home-news-track{display:flex;gap:20px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:thin;scrollbar-color:#c5dce9 transparent;padding-bottom:16px;overscroll-behavior-x:contain}
 .home-news-card{flex:0 0 calc((100% - 20px)/2);min-width:0;max-width:360px;scroll-snap-align:start;display:block}
-.home-news-card>img{display:block;width:100%;aspect-ratio:4/3;object-fit:cover;background:var(--paper)}
+.home-news-card>img{display:block;width:100%;height:auto;aspect-ratio:4/3;object-fit:cover;background:var(--paper)}
 .home .home-news-card h3{font-size:21px;line-height:1.5;word-break:keep-all;margin:10px 0}.home .home-news-card .eyebrow{margin-top:18px}.home-news-description{font-size:15px;line-height:1.7;color:var(--muted)}
 .home-news-controls{display:flex;justify-content:flex-end;gap:10px;margin-top:18px}.home-news-controls button{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border:1px solid #c9dce8;background:white;color:#006da3;border-radius:50%;cursor:pointer}.home-news-controls button:hover{background:#edf6fc}.home-news-controls button:disabled{opacity:.35;cursor:default}
 .home .journal-hub .story-profile>.photo{max-width:260px}
