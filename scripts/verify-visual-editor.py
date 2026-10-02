@@ -70,6 +70,12 @@ try:
   assert call('/api/admin/visual',{**body,'revision':saved['revision'],'edits':[{**edit,**change}]})[0]==400
  assert call('/api/admin/visual',{**body,'path':'../../admin'})[0]==400
  assert call('/api/admin/visual',{**body,'path':'common'})[0]==400
+ styled={**edit,'style':{'fontSize':'32px','color':'#cc2277','lineHeight':'1.5','fontWeight':'700'},'mobileStyle':{'fontSize':'20px'}}
+ assert call('/api/admin/visual',{'path':'contact','locale':'kr','revision':None,'edits':[styled]})[0]==200
+ layout={'id':'layout-test','kind':'layout','selector':'main > section:nth-of-type(1)','source':'SECTION','value':'','style':{'display':'grid','gridTemplateColumns':'repeat(2, minmax(0, 1fr))','gap':'24px'}}
+ assert call('/api/admin/visual',{'path':'education','locale':'kr','revision':None,'edits':[layout]})[0]==200
+ for style in [{'backgroundImage':'url(https://evil.example)'},{'position':'fixed'},{'fontSize':'expression(alert(1))'},{'color':'red;display:none'}]:
+  assert call('/api/admin/visual',{'path':'contact','locale':'kr','revision':None,'edits':[{**edit,'style':style}]})[0]==400
  # Preserve editing of photographs carried over from the previous website.
  legacy_image={'id':'legacy-photo','kind':'image','selector':'main > img:nth-of-type(1)','source':'/migrated-media/previous.jpg','value':'/migrated-media/previous.jpg','alt':'Previous photograph','fit':'contain','x':50,'y':50,'scale':1}
  assert call('/api/admin/visual',{'path':'about','locale':'kr','revision':None,'edits':[legacy_image]})[0]==200
@@ -83,6 +89,7 @@ try:
  body['revision']=saved['revision'];body['edits'][0]['value']='Text still saves after upload failure'
  status,data=call('/api/admin/visual',body);assert status==200,(status,data)
  media_fail=False;status,data=upload(png);assert status==200,(status,data);assert json.loads(data)['url'].startswith('/api/media/')
+ if os.environ.get('VISUAL_BROWSER_TEST')=='1':subprocess.run(['node','scripts/verify-visual-browser.cjs'],check=True)
  print('PASS: editor route, authentication, CSRF, persistent/public read, stale-write protection, input validation, real multipart upload, isolated upload failure, subsequent text save')
 finally:
  process.terminate();process.wait(timeout=15);server.shutdown();vars_file.unlink(missing_ok=True)

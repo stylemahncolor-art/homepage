@@ -1,4 +1,5 @@
 'use client';
+import {cssProperty} from '@/lib/visual-style';
 import {imageSources} from '@/lib/image-sources';
 import {useEffect} from 'react';
 import {usePathname} from 'next/navigation';
@@ -12,6 +13,7 @@ export default function VisualContent(){
   if(!['kr','en','cn','jp'].includes(locale))return;
   let docs:{page:VisualDocument;common:VisualDocument}={page:emptyDocument(),common:emptyDocument()};
   let active=true,editing=false,mode='select',frame=0;
+  const styleOriginals=new Map<HTMLElement,string|null>();
   const textOriginals=new Map<Text,{source:string;applied:string}>();
   const imageOriginals=new Map<HTMLImageElement,{src:string;srcset:string|null;style:string|null;alt:string;applied:string}>();
   const send=(type:string,data:object={})=>{if(window.parent!==window)window.parent.postMessage({channel:'ipib-visual',type,path,locale,...data},window.location.origin);};
@@ -21,20 +23,25 @@ export default function VisualContent(){
    while(current!==root){const parent=current.parentElement;if(!parent)return null;const siblings=Array.from(parent.children).filter(e=>e.tagName===current.tagName);segments.unshift(`${current.tagName.toLowerCase()}:nth-of-type(${siblings.indexOf(current)+1})`);current=parent;}
    return [root.tagName.toLowerCase(),...segments].join(' > ');
   };
-  const safeText=(node:Text)=>Boolean(node.textContent?.trim()&&node.parentElement&&!node.parentElement.closest('script,style,svg,textarea,input,select,[contenteditable],.admin-entry,.languages'));
+  const safeText=(node:Text)=>Boolean(node.textContent?.trim()&&node.parentElement&&!node.parentElement.closest('script,style,svg,textarea,input,select,[contenteditable],.admin-entry'));
   const locate=(edit:VisualEdit)=>{try{return document.querySelector(edit.selector);}catch{return null;}};
   const apply=()=>{
    if(!active)return;
    observer.disconnect();
+   for(const [element,style] of styleOriginals){if(element.isConnected){if(style===null)element.removeAttribute('style');else element.setAttribute('style',style);}}styleOriginals.clear();
    // Restore previous patches before reapplying; React may have rendered a new tab.
    for(const [node,original] of textOriginals){if(!node.isConnected){textOriginals.delete(node);continue;}if(node.nodeValue===original.applied)node.nodeValue=original.source;else if(node.nodeValue!==original.source)textOriginals.delete(node);}
    for(const [image,original] of imageOriginals){if(!image.isConnected){imageOriginals.delete(image);continue;}if(image.getAttribute('src')===original.applied){image.setAttribute('src',original.src);if(original.srcset===null)image.removeAttribute('srcset');else image.setAttribute('srcset',original.srcset);if(original.style===null)image.removeAttribute('style');else image.setAttribute('style',original.style);image.alt=original.alt;}else imageOriginals.delete(image);}
    for(const edit of [...docs.common.edits,...docs.page.edits]){
     const element=locate(edit);if(!element)continue;
-    if(edit.kind==='text'){
+    if(edit.kind==='layout'){if(element.tagName!==edit.source)continue;}
+    else if(edit.kind==='text'){
      const node=element.childNodes[edit.textIndex??-1];if(!node||node.nodeType!==Node.TEXT_NODE||node.nodeValue!==edit.source||!safeText(node as Text))continue;
+     if(element instanceof HTMLElement&&!styleOriginals.has(element))styleOriginals.set(element,element.getAttribute('style'));
+     if(element instanceof HTMLElement)element.style.setProperty('white-space','pre-wrap','important');
      textOriginals.set(node as Text,{source:edit.source,applied:edit.value});node.nodeValue=edit.value;
-    }else if(element instanceof HTMLImageElement&&(element.getAttribute('data-content-source')||element.getAttribute('src'))===edit.source){
+    }else if(edit.kind==='image'){
+     if(!(element instanceof HTMLImageElement)||(element.getAttribute('data-content-source')||element.getAttribute('src'))!==edit.source)continue;
      if(!imageOriginals.has(element))imageOriginals.set(element,{src:element.getAttribute('src')||edit.source,srcset:element.getAttribute('srcset'),style:element.getAttribute('style'),alt:element.alt,applied:edit.value});
      const variant=imageSources(edit.value);const original=imageOriginals.get(element)!;original.applied=variant?.src||edit.value;
      if(variant)element.setAttribute('srcset',variant.srcSet);else element.removeAttribute('srcset');element.src=original.applied;element.alt=edit.alt||'';
@@ -44,6 +51,7 @@ export default function VisualContent(){
      element.style.setProperty('position','relative');element.style.setProperty('left','auto');element.style.setProperty('top','auto');
      element.style.setProperty('transform',`scale(${edit.scale??1})`);element.style.setProperty('transform-origin',`${edit.x??50}% ${edit.y??50}%`);
     }
+    if(element instanceof HTMLElement&&(edit.style||edit.mobileStyle)){if(!styleOriginals.has(element))styleOriginals.set(element,element.getAttribute('style'));const styles={...edit.style,...(window.innerWidth<=600?edit.mobileStyle:{})};for(const [name,value] of Object.entries(styles))element.style.setProperty(cssProperty(name),value,'important');}
    }
    observer.observe(document.body,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['src','srcset']});
   };
@@ -51,15 +59,18 @@ export default function VisualContent(){
   const message=(event:MessageEvent)=>{
    if(event.origin!==location.origin||event.source!==window.parent||window.parent===window||event.data?.channel!=='ipib-visual')return;
    const data=event.data;
+   if(data.type==='parent'){const current=document.querySelector('[data-visual-selected]');const parent=current?.parentElement;if(parent&&selectorFor(parent))selectLayout(parent);return;}
    if(data.type==='configure'&&validVisualEdits(data.page?.edits)&&validVisualEdits(data.common?.edits)){
-    editing=true;mode=data.mode==='browse'?'browse':'select';docs={page:data.page,common:data.common};apply();
-    document.documentElement.classList.toggle('visual-selecting',mode==='select');
+    editing=true;mode=data.mode==='browse'?'browse':data.mode==='layout'?'layout':'select';docs={page:data.page,common:data.common};apply();
+    document.documentElement.classList.toggle('visual-selecting',mode!=='browse');
    }
   };
+  const selectLayout=(element:Element)=>{const selector=selectorFor(element);if(!selector)return;const scope=selector.startsWith('main')?'page':'common';const existing=docs[scope].edits.find(e=>e.kind==='layout'&&e.selector===selector);const edit:VisualEdit=existing??{id:crypto.randomUUID(),kind:'layout',selector,source:element.tagName,value:''};document.querySelectorAll('[data-visual-selected]').forEach(e=>e.removeAttribute('data-visual-selected'));element.setAttribute('data-visual-selected','true');send('selected',{scope,edit});};
   const click=(event:MouseEvent)=>{
    if(!editing||!(event.target instanceof Element))return;
    if(mode==='browse'){if(event.target.closest('a')){event.preventDefault();event.stopPropagation();send('notice',{message:'다른 페이지는 위쪽 페이지 목록에서 선택해 주세요. 탭과 펼치기 버튼은 이 화면에서 사용할 수 있습니다.'});}return;}
-   const target=event.target;if(target.closest('.languages,.admin-entry')){event.preventDefault();event.stopPropagation();return;}
+   const target=event.target;if(target.closest('.admin-entry')){event.preventDefault();event.stopPropagation();return;}
+   if(mode==='layout'){const container=target.closest('section,article,figure,div,main,header,footer');if(container){event.preventDefault();event.stopPropagation();event.stopImmediatePropagation();selectLayout(container);}return;}
    const image=target.closest('img');
    let node:Node|null=null;
    if(!image){
@@ -79,10 +90,11 @@ export default function VisualContent(){
    document.querySelectorAll('[data-visual-selected]').forEach(e=>e.removeAttribute('data-visual-selected'));element.setAttribute('data-visual-selected','true');
    send('selected',{scope,edit});
   };
+  const resize=()=>{cancelAnimationFrame(frame);frame=requestAnimationFrame(apply);};window.addEventListener('resize',resize);
   window.addEventListener('message',message);document.addEventListener('click',click,true);
   const abort=new AbortController();
   fetch(`/api/site-content?path=${encodeURIComponent(path)}&locale=${locale}`,{cache:'no-store',signal:abort.signal}).then(async r=>{if(!r.ok)return;const data=await r.json();if(active&&!editing&&validVisualEdits(data.page?.edits)&&validVisualEdits(data.common?.edits))docs=data;}).catch(()=>{}).finally(()=>{if(active){apply();send('ready');}});
-  return ()=>{active=false;abort.abort();cancelAnimationFrame(frame);observer.disconnect();window.removeEventListener('message',message);document.removeEventListener('click',click,true);for(const [node,original] of textOriginals){if(node.isConnected&&node.nodeValue===original.applied)node.nodeValue=original.source;}
+  return ()=>{active=false;abort.abort();cancelAnimationFrame(frame);observer.disconnect();window.removeEventListener('resize',resize);for(const [element,style] of styleOriginals){if(element.isConnected){if(style===null)element.removeAttribute('style');else element.setAttribute('style',style);}}window.removeEventListener('message',message);document.removeEventListener('click',click,true);for(const [node,original] of textOriginals){if(node.isConnected&&node.nodeValue===original.applied)node.nodeValue=original.source;}
    for(const [image,original] of imageOriginals){if(image.isConnected&&image.getAttribute('src')===original.applied){image.setAttribute('src',original.src);if(original.srcset===null)image.removeAttribute('srcset');else image.setAttribute('srcset',original.srcset);if(original.style===null)image.removeAttribute('style');else image.setAttribute('style',original.style);image.alt=original.alt;}}
    document.documentElement.classList.remove('visual-selecting');document.querySelectorAll('[data-visual-selected]').forEach(e=>e.removeAttribute('data-visual-selected'));};
  },[pathname]);

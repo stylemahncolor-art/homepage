@@ -1,0 +1,40 @@
+const {chromium}=require('playwright');
+(async()=>{
+ const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
+ try{
+  const context=await browser.newContext({viewport:{width:1600,height:1000}});
+  await context.addCookies([{name:'ipib-admin-session',value:'test-token',domain:'127.0.0.1',path:'/'}]);
+  const page=await context.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
+  await page.goto('http://127.0.0.1:3097/admin');
+  const frame=page.frameLocator('iframe');
+  await page.getByText('수정할 문구나 사진을 화면에서 클릭하세요.',{exact:false}).waitFor();
+  await frame.locator('main h1').first().click();
+  await page.getByLabel('표시할 문구',{exact:true}).fill('실시간 편집\n두 번째 줄');
+  await page.getByLabel('크기 (px)',{exact:true}).fill('36');
+  await page.getByLabel('굵기',{exact:true}).selectOption('700');
+  await page.getByLabel('글자 색',{exact:true}).fill('#cc2277');
+  const selected=frame.locator('[data-visual-selected]');
+  await selected.filter({hasText:'실시간 편집'}).waitFor();
+  await page.waitForFunction(()=>{const e=document.querySelector('iframe').contentDocument.querySelector('[data-visual-selected]');return e&&getComputedStyle(e).fontSize==='36px';});
+  let style=await selected.evaluate(e=>({size:getComputedStyle(e).fontSize,color:getComputedStyle(e).color,weight:getComputedStyle(e).fontWeight,white:getComputedStyle(e).whiteSpace,text:e.textContent}));
+  if(style.color!=='rgb(204, 34, 119)'||style.weight!=='700'||style.white!=='pre-wrap'||!style.text.includes('\n'))throw Error(JSON.stringify(style));
+  await page.getByRole('button',{name:'모바일 서식',exact:true}).click();await page.getByLabel('크기 (px)',{exact:true}).fill('22');
+  await page.waitForFunction(()=>getComputedStyle(document.querySelector('iframe').contentDocument.querySelector('[data-visual-selected]')).fontSize==='22px');
+  await page.getByRole('button',{name:'PC 화면',exact:true}).click();
+  await page.waitForFunction(()=>getComputedStyle(document.querySelector('iframe').contentDocument.querySelector('[data-visual-selected]')).fontSize==='36px');
+  await page.getByRole('button',{name:'변경 내용 저장',exact:true}).click();await page.getByText('저장 완료.',{exact:false}).waitFor();
+  const visitor=await context.newPage();await visitor.goto('http://127.0.0.1:3097/kr');await visitor.getByText('실시간 편집',{exact:false}).first().waitFor();
+  await page.getByRole('button',{name:'기본 서식',exact:true}).click();
+  await page.getByRole('button',{name:'상위 영역 선택 · 전체 카드/섹션',exact:true}).click();await page.getByRole('heading',{name:'영역 레이아웃',exact:true}).first().waitFor();
+  await page.getByLabel('배치 방식',{exact:true}).selectOption('grid');await page.getByLabel('격자 열 수',{exact:true}).selectOption('repeat(2, minmax(0, 1fr))');
+  await page.waitForFunction(()=>document.querySelector('iframe').contentDocument.querySelector('[data-visual-selected]').style.display==='grid');
+  await page.getByRole('button',{name:'이 항목을 기본 내용으로 복원',exact:true}).click();
+  await page.getByRole('button',{name:'내용 선택',exact:true}).click();
+  await frame.locator('main img').first().click();await page.getByRole('heading',{name:'사진 편집',exact:true}).waitFor();
+  await page.getByLabel('너비 (%)',{exact:true}).fill('70');await page.getByLabel('좌우 이동 (px)',{exact:true}).fill('24');
+  await page.waitForFunction(()=>{const e=document.querySelector('iframe').contentDocument.querySelector('[data-visual-selected]');return e.style.width==='70%'&&e.style.translate==='24px';});
+  await page.screenshot({path:'/tmp/ipib-visual-editor.png',fullPage:true});
+  if(errors.length)throw Error(errors.join('\n'));
+  console.log('PASS browser: large editor, click selection, live text and line breaks, font/color/bold, mobile overrides, save and visitor reflection, parent layout/grid, image width/position, no runtime errors');
+ }finally{await browser.close();}
+})().catch(e=>{console.error(e);process.exit(1);});
