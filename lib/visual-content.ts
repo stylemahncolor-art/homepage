@@ -5,7 +5,7 @@ export type VisualEdit = {
 export type VisualDocument = {edits:VisualEdit[]; revision:string|null};
 export const emptyDocument=():VisualDocument=>({edits:[],revision:null});
 export const validContentPath=(path:unknown):path is string=>typeof path==='string'&&/^(home|common|about|education(?:\/(?:personal-color|fashion-body-fit|makeup-hair|beauty-image|total-image-branding))?|certification|global|news(?:\/[a-z0-9-]{3,80})?|contact)$/.test(path);
-export const validMediaPath=(value:unknown):value is string=>typeof value==='string'&&value.length<=500&&(/^\/assets\/[a-zA-Z0-9_./-]+$/.test(value)&&!value.includes('..')||/^\/api\/media\/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/.test(value));
+export const validMediaPath=(value:unknown):value is string=>typeof value==='string'&&value.length<=500&&(/^\/(?:assets|migrated-media)\/[a-zA-Z0-9_./-]+$/.test(value)&&!value.includes('..')||/^\/api\/media\/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/.test(value));
 export function validVisualEdits(value:unknown):value is VisualEdit[]{
  if(!Array.isArray(value)||value.length>200)return false;
  const ids=new Set<string>();

@@ -57,6 +57,11 @@ try:
   assert call('/api/admin/visual',{**body,'revision':saved['revision'],'edits':[{**edit,**change}]})[0]==400
  assert call('/api/admin/visual',{**body,'path':'../../admin'})[0]==400
  assert call('/api/admin/visual',{**body,'path':'common'})[0]==400
+ # Preserve editing of photographs carried over from the previous website.
+ legacy_image={'id':'legacy-photo','kind':'image','selector':'main > img:nth-of-type(1)','source':'/migrated-media/previous.jpg','value':'/migrated-media/previous.jpg','alt':'Previous photograph','fit':'contain','x':50,'y':50,'scale':1}
+ assert call('/api/admin/visual',{'path':'about','locale':'kr','revision':None,'edits':[legacy_image]})[0]==200
+ for value in ['/migrated-media/../private.jpg','/migrated-media/test.jpg?script=1','https://example.com/photo.jpg']:
+  assert call('/api/admin/visual',{'path':'about','locale':'kr','revision':None,'edits':[{**legacy_image,'value':value}]})[0]==400
  boundary='test-boundary';png=base64.b64decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/l+0AAAAASUVORK5CYII=')
  def upload(data):return call('/api/admin/upload',raw=(f'--{boundary}\r\nContent-Disposition: form-data; name="image"; filename="test.png"\r\nContent-Type: image/png\r\n\r\n'.encode()+data+f'\r\n--{boundary}--\r\n'.encode()),content_type=f'multipart/form-data; boundary={boundary}')
  assert upload(b'not an image')[0]==400
