@@ -26,7 +26,7 @@ class Mock(http.server.BaseHTTPRequestHandler):
   if key not in rows or rows[key]['updated_at']!=q['updated_at'][0].removeprefix('eq.'):return self.reply([])
   rows[key]=row;return self.reply([row])
 server=http.server.ThreadingHTTPServer(('127.0.0.1',3096),Mock);threading.Thread(target=server.serve_forever,daemon=True).start()
-settings={'SUPABASE_URL':'http://127.0.0.1:3096','SUPABASE_ANON_KEY':'anon-test','SUPABASE_SERVICE_ROLE_KEY':'service-test','ADMIN_EMAIL':'owner@example.com'}
+settings={'SUPABASE_URL':'http://127.0.0.1:3096','SUPABASE_ANON_KEY':'anon-test','SUPABASE_SERVICE_ROLE_KEY':'service-test','ADMIN_EMAIL':'owner@example.com','ADMIN_ACCESS_CODE':'12345678'}
 vars_file=pathlib.Path('dist/server/.dev.vars')
 if vars_file.exists():raise RuntimeError('Refusing to overwrite existing runtime configuration')
 vars_file.write_text('\n'.join(f'{k}={v}' for k,v in settings.items())+'\n')
@@ -43,6 +43,19 @@ try:
  for _ in range(200):
   try:call('/admin');break
   except Exception:time.sleep(.2)
+ # Synthetic code is only for this local fake backend.
+ assert call('/api/admin/login',{'code':'87654321'},auth=False)[0]==401
+ request=urllib.request.Request(base+'/api/admin/login',data=json.dumps({'code':'12345678'}).encode(),headers={'Content-Type':'application/json','Origin':base})
+ with op.open(request) as response:
+  assert response.status==200
+  set_cookie=response.headers['Set-Cookie'];assert 'HttpOnly' in set_cookie and 'Secure' in set_cookie
+  code_cookie=set_cookie.split(';')[0]
+ legacy_cookie=cookie;cookie=code_cookie
+ assert call('/api/admin/visual?path=global&locale=kr')[0]==200
+ cookie=code_cookie+'x';assert call('/api/admin/visual?path=global&locale=kr')[0]==403
+ cookie=legacy_cookie
+ for _ in range(3):assert call('/api/admin/login',{'code':'87654321'},auth=False)[0]==401
+ assert call('/api/admin/login',{'code':'12345678'},auth=False)[0]==429
  assert call('/admin/editor')[0]==200
  assert b'iframe' in call('/admin/editor')[1]
  assert call('/api/admin/visual?path=global&locale=kr',auth=False)[0]==403

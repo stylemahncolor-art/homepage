@@ -110,3 +110,17 @@ Workers Free는 하루 100,000 동적 요청, 요청당 CPU 10ms 제한이 있�
 - https://developers.cloudflare.com/workers/platform/limits/
 
 실제 배포 여부와 검증 범위는 `DEPLOYMENT-STATUS.md`를 확인하세요.
+
+## 8자리 관리자 코드 로그인
+
+Cloudflare Worker `ipib-preview` → Settings → Variables and Secrets에
+`ADMIN_ACCESS_CODE`를 **Secret** 유형으로 등록하고 8자리 숫자를 입력한다.
+실제 번호는 GitHub 파일에 기록하지 않는다. 기존 서버의
+`SUPABASE_SERVICE_ROLE_KEY` 또는 별도의 `ADMIN_SESSION_SECRET`이 세션 서명에 필요하다.
+코드와 서명용 Secret이 준비되면 `/admin`과 `/admin/editor`가 코드 입력 화면으로 전환된다.
+설정 전에는 기존 이메일 로그인 화면을 유지한다.
+로그인은 7일 유지되며 코드를 변경하면 기존 코드 세션이 무효화된다.
+코드 로그인은 Supabase의 관리자 계정 생성 없이 가능하지만, 콘텐츠와 사진 저장에는
+기존 Supabase 연결 설정이 계속 필요하다.
+반복 입력 제한은 Worker 인스턴스별 5분에 5회이며, 여러 인스턴스에 대한 공통 제한은
+Cloudflare에서 `/api/admin/login` 경로에 별도로 설정해야 한다.
