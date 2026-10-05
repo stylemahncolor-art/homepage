@@ -305,3 +305,14 @@
  .site-footer .footer-bottom details p{margin-top:8px;white-space:normal}
  .site-footer .footer-bottom summary{padding:2px 0;white-space:nowrap}
 }
+
+/* Match the homepage level overview to the adjacent certification summary. */
+.home .level-system-compact{padding-top:40px;padding-bottom:56px}
+.home .level-system-compact .section-heading{margin-bottom:28px}
+.home .level-system-compact .section-heading h2{font-size:30px;line-height:1.4;margin-top:16px;margin-bottom:18px}
+.home .level-system-compact .section-heading>.lead{font-size:16px;line-height:1.8;color:var(--ink);margin:0;white-space:pre-line}
+@media(max-width:600px){
+ .home .level-system-compact{padding-top:32px;padding-bottom:40px}
+ .home .level-system-compact .section-heading{margin-bottom:24px}
+ .home .level-system-compact .section-heading h2{font-size:27px;margin-bottom:14px}
+}
