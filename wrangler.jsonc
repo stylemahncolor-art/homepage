@@ -9,6 +9,7 @@
   "workers_dev": true,
   "preview_urls": true,
   "vars": {
-    "SUPABASE_MEDIA_BUCKET": "ipib-media"
+    "SUPABASE_MEDIA_BUCKET": "ipib-media",
+    "SUPABASE_URL": "https://qjxjbfawjyrotugpyyon.supabase.co"
   }
 }
