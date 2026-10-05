@@ -71,7 +71,11 @@ try:
  assert call('/api/admin/visual',{**body,'path':'../../admin'})[0]==400
  assert call('/api/admin/visual',{**body,'path':'common'})[0]==400
  styled={**edit,'style':{'fontSize':'32px','color':'#cc2277','lineHeight':'1.5','fontWeight':'700'},'mobileStyle':{'fontSize':'20px'}}
+ styled['weights']=[{'start':0,'end':7,'weight':700},{'start':8,'end':14,'weight':400}]
  assert call('/api/admin/visual',{'path':'contact','locale':'kr','revision':None,'edits':[styled]})[0]==200
+ assert json.loads(call('/api/site-content?path=contact&locale=kr',auth=False)[1])['page']['edits'][0]['weights']==styled['weights']
+ for weights in [[{'start':-1,'end':4,'weight':700}],[{'start':0,'end':99999,'weight':700}],[{'start':0,'end':4,'weight':900}],[{'start':0,'end':4,'weight':700},{'start':2,'end':5,'weight':400}]]:
+  assert call('/api/admin/visual',{'path':'contact','locale':'kr','revision':None,'edits':[{**edit,'weights':weights}]})[0]==400
  layout={'id':'layout-test','kind':'layout','selector':'main > section:nth-of-type(1)','source':'SECTION','value':'','style':{'display':'grid','gridTemplateColumns':'repeat(2, minmax(0, 1fr))','gap':'24px'}}
  assert call('/api/admin/visual',{'path':'education','locale':'kr','revision':None,'edits':[layout]})[0]==200
  for style in [{'backgroundImage':'url(https://evil.example)'},{'position':'fixed'},{'fontSize':'expression(alert(1))'},{'color':'red;display:none'}]:

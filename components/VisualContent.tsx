@@ -15,7 +15,8 @@ export default function VisualContent(){
   let active=true,editing=false,mode='select',frame=0;
   const detailOriginals=new Map<HTMLDetailsElement,boolean>();
   const styleOriginals=new Map<HTMLElement,string|null>();
-  const textOriginals=new Map<Text,{source:string;applied:string}>();
+  const textOriginals=new Map<Text,{source:string;applied:string;wrapper?:HTMLSpanElement}>();
+  const inlineNodes=new Map<HTMLSpanElement,Text>();
   const imageOriginals=new Map<HTMLImageElement,{src:string;srcset:string|null;style:string|null;alt:string;applied:string}>();
   const send=(type:string,data:object={})=>{if(window.parent!==window)window.parent.postMessage({channel:'ipib-visual',type,path,locale,...data},window.location.origin);};
   const selectorFor=(element:Element)=>{
@@ -31,7 +32,7 @@ export default function VisualContent(){
    observer.disconnect();
    for(const [element,style] of styleOriginals){if(element.isConnected){if(style===null)element.removeAttribute('style');else element.setAttribute('style',style);}}styleOriginals.clear();
    // Restore previous patches before reapplying; React may have rendered a new tab.
-   for(const [node,original] of textOriginals){if(!node.isConnected){textOriginals.delete(node);continue;}if(node.nodeValue===original.applied)node.nodeValue=original.source;else if(node.nodeValue!==original.source)textOriginals.delete(node);}
+   for(const [node,original] of textOriginals){if(original.wrapper){if(original.wrapper.isConnected)original.wrapper.replaceWith(node);inlineNodes.delete(original.wrapper);original.wrapper=undefined;}if(!node.isConnected){textOriginals.delete(node);continue;}if(node.nodeValue===original.applied)node.nodeValue=original.source;else if(node.nodeValue!==original.source)textOriginals.delete(node);}
    for(const [image,original] of imageOriginals){if(!image.isConnected){imageOriginals.delete(image);continue;}if(image.getAttribute('src')===original.applied){image.setAttribute('src',original.src);if(original.srcset===null)image.removeAttribute('srcset');else image.setAttribute('srcset',original.srcset);if(original.style===null)image.removeAttribute('style');else image.setAttribute('style',original.style);image.alt=original.alt;}else imageOriginals.delete(image);}
    for(const edit of [...docs.common.edits,...docs.page.edits]){
     const element=locate(edit);if(!element)continue;
@@ -41,6 +42,12 @@ export default function VisualContent(){
      if(element instanceof HTMLElement&&!styleOriginals.has(element))styleOriginals.set(element,element.getAttribute('style'));
      if(element instanceof HTMLElement)element.style.setProperty('white-space','pre-wrap','important');
      textOriginals.set(node as Text,{source:edit.source,applied:edit.value});node.nodeValue=edit.value;
+     if(edit.weights?.length){
+      const wrapper=document.createElement('span');wrapper.dataset.visualInline='true';
+      let offset=0;for(const run of edit.weights){if(run.start>offset)wrapper.append(document.createTextNode(edit.value.slice(offset,run.start)));const span=document.createElement('span');span.textContent=edit.value.slice(run.start,run.end);span.style.setProperty('font-weight',String(run.weight),'important');wrapper.append(span);offset=run.end;}
+      if(offset<edit.value.length)wrapper.append(document.createTextNode(edit.value.slice(offset)));
+      node.replaceWith(wrapper);textOriginals.get(node as Text)!.wrapper=wrapper;inlineNodes.set(wrapper,node as Text);
+     }
     }else if(edit.kind==='image'){
      if(!(element instanceof HTMLImageElement)||(element.getAttribute('data-content-source')||element.getAttribute('src'))!==edit.source)continue;
      if(!imageOriginals.has(element))imageOriginals.set(element,{src:element.getAttribute('src')||edit.source,srcset:element.getAttribute('srcset'),style:element.getAttribute('style'),alt:element.alt,applied:edit.value});
@@ -75,18 +82,20 @@ export default function VisualContent(){
    const target=event.target;if(target.closest('.admin-entry')){event.preventDefault();event.stopPropagation();return;}
    if(mode==='layout'){const container=target.closest('section,article,figure,div,main,header,footer');if(container){event.preventDefault();event.stopPropagation();event.stopImmediatePropagation();selectLayout(container);}return;}
    const image=target.closest('img');
+   const inline=target.closest<HTMLSpanElement>('[data-visual-inline]');
    let node:Node|null=null;
-   if(!image){
+   if(inline)node=inlineNodes.get(inline)||null;
+   else if(!image){
     const doc=document as Document&{caretPositionFromPoint?:(x:number,y:number)=>{offsetNode:Node}|null;caretRangeFromPoint?:(x:number,y:number)=>Range|null};
     node=doc.caretPositionFromPoint?.(event.clientX,event.clientY)?.offsetNode??doc.caretRangeFromPoint?.(event.clientX,event.clientY)?.startContainer??null;
     if(!node||node.nodeType!==Node.TEXT_NODE||!target.contains(node)||!safeText(node as Text))node=Array.from(target.childNodes).find(n=>n.nodeType===Node.TEXT_NODE&&safeText(n as Text))??null;
    }
-   const element=image||node?.parentElement;if(!element)return;
+   const element=image||inline?.parentElement||node?.parentElement;if(!element)return;
    const selector=selectorFor(element);if(!selector)return;
    event.preventDefault();event.stopPropagation();event.stopImmediatePropagation();
    const scope=selector.startsWith('main')?'page':'common';
    const source=image?(image.getAttribute('data-content-source')||imageOriginals.get(image)?.src||image.getAttribute('src')||''):(textOriginals.get(node as Text)?.source||node?.nodeValue||'');
-   const textIndex=node?Array.from(element.childNodes).indexOf(node as ChildNode):undefined;
+   const textIndex=node?Array.from(element.childNodes).indexOf((inline||node) as ChildNode):undefined;
    const existing=docs[scope].edits.find(e=>e.selector===selector&&e.source===source&&e.kind===(image?'image':'text')&&(image||e.textIndex===textIndex));
    const computed=image?getComputedStyle(image):null;
    const edit:VisualEdit=existing??{id:crypto.randomUUID(),kind:image?'image':'text',selector,source,value:image?source:node?.nodeValue||'',...(image?{alt:image.alt,fit:computed?.objectFit==='contain'?'contain':'cover',x:50,y:50,scale:1}:{textIndex})};
@@ -97,7 +106,7 @@ export default function VisualContent(){
   window.addEventListener('message',message);document.addEventListener('click',click,true);
   const abort=new AbortController();
   fetch(`/api/site-content?path=${encodeURIComponent(path)}&locale=${locale}`,{cache:'no-store',signal:abort.signal}).then(async r=>{if(!r.ok)return;const data=await r.json();if(active&&!editing&&validVisualEdits(data.page?.edits)&&validVisualEdits(data.common?.edits))docs=data;}).catch(()=>{}).finally(()=>{if(active){apply();send('ready');}});
-  return ()=>{active=false;abort.abort();cancelAnimationFrame(frame);observer.disconnect();window.removeEventListener('resize',resize);for(const [element,style] of styleOriginals){if(element.isConnected){if(style===null)element.removeAttribute('style');else element.setAttribute('style',style);}}window.removeEventListener('message',message);document.removeEventListener('click',click,true);for(const [node,original] of textOriginals){if(node.isConnected&&node.nodeValue===original.applied)node.nodeValue=original.source;}
+  return ()=>{active=false;abort.abort();cancelAnimationFrame(frame);observer.disconnect();window.removeEventListener('resize',resize);for(const [element,style] of styleOriginals){if(element.isConnected){if(style===null)element.removeAttribute('style');else element.setAttribute('style',style);}}window.removeEventListener('message',message);document.removeEventListener('click',click,true);for(const [node,original] of textOriginals){if(original.wrapper?.isConnected)original.wrapper.replaceWith(node);if(node.isConnected&&node.nodeValue===original.applied)node.nodeValue=original.source;}inlineNodes.clear();
    for(const [image,original] of imageOriginals){if(image.isConnected&&image.getAttribute('src')===original.applied){image.setAttribute('src',original.src);if(original.srcset===null)image.removeAttribute('srcset');else image.setAttribute('srcset',original.srcset);if(original.style===null)image.removeAttribute('style');else image.setAttribute('style',original.style);image.alt=original.alt;}}
    for(const [detail,open] of detailOriginals){if(detail.isConnected)detail.open=open;}
    document.documentElement.classList.remove('visual-selecting');document.querySelectorAll('[data-visual-selected]').forEach(e=>e.removeAttribute('data-visual-selected'));};

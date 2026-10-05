@@ -13,7 +13,7 @@ export default function StyleControls({edit,mobile,onChange}:{edit:VisualEdit;mo
   <p className="admin-note">{mobile?'모바일 전용 설정: 600px 이하 화면에 적용됩니다.':'기본 설정: 모든 화면에 적용됩니다.'} 빈 항목은 기존 디자인을 유지합니다.</p>
   {edit.kind==='text'&&<><h3>글자 서식</h3><div className="visual-field-grid">{numeric('크기 (px)','fontSize','px',8,240)}{numeric('줄간격 (배수)','lineHeight','',0.5,4)}{numeric('자간 (px)','letterSpacing','px',-10,30)}<label>글자 색<input type="color" value={style.color||'#172a42'} onChange={e=>set('color',e.target.value)}/><button type="button" onClick={()=>set('color','')}>기본 색</button></label></div>
   {select('폰트','fontFamily',[[fonts.sans,'기본 고딕'],[fonts.gowun,'고운돋움'],[fonts.serif,'바탕·세리프'],[fonts.hand,'영문 손글씨']])}
-  {select('굵기','fontWeight',[['300','얇게'],['400','보통'],['500','중간'],['600','조금 굵게'],['700','볼드'],['900','매우 굵게']])}
+  {select('전체 문구 굵기','fontWeight',[['300','얇게'],['400','보통'],['500','중간'],['600','조금 굵게'],['700','볼드'],['900','매우 굵게']])}
   {select('기울임','fontStyle',[['normal','보통'],['italic','기울임']])}{select('글자 효과','textDecoration',[['none','없음'],['underline','밑줄'],['line-through','취소선']])}
   {select('정렬','textAlign',[['left','왼쪽'],['center','가운데'],['right','오른쪽'],['justify','양쪽']])}
   <p className="admin-note">위 문구 입력창에서 Enter를 누르면 화면에서도 줄바꿈됩니다. 서식은 선택한 문구가 들어 있는 항목에 적용됩니다.</p></>}
