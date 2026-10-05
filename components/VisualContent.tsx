@@ -75,6 +75,19 @@ export default function VisualContent(){
      else if(edit.kind==='layout')resolved.push({...edit,source:element.tagName});else missing.push(edit.id);
     }send('resolved',{requestId:data.requestId,edits:resolved,missing});return;
    }
+   if(data.type==='instructor-position'&&editing){
+    const current=document.querySelector('[data-visual-selected]');const card=current?.closest<HTMLElement>('.branch-instructor');
+    if(!card){send('notice',{message:'먼저 선생님 사진이나 소개 문구를 선택해 주세요.'});return;}
+    if(data.action==='select'){selectLayout(card);return;}
+    if(!['up','down'].includes(data.action))return;
+    const siblings=Array.from(card.parentElement!.children).filter((e):e is HTMLElement=>e instanceof HTMLElement&&e.matches('.branch-instructor'));
+    const ordered=siblings.map((element,index)=>({element,index,order:Number(getComputedStyle(element).order)||0})).sort((a,b)=>a.order-b.order||a.index-b.index).map(x=>x.element);
+    const index=ordered.indexOf(card),destination=index+(data.action==='up'?-1:1);
+    if(destination<0||destination>=ordered.length){send('notice',{message:data.action==='up'?'이미 첫 번째 선생님입니다.':'이미 마지막 선생님입니다.'});return;}
+    [ordered[index],ordered[destination]]=[ordered[destination],ordered[index]];
+    const edits:VisualEdit[]=ordered.map((element,order)=>{const selector=selectorFor(element)!;const existing=docs.page.edits.find(e=>e.kind==='layout'&&e.selector===selector);return {...(existing||{id:crypto.randomUUID(),kind:'layout' as const,selector,source:element.tagName,value:''}),style:{...existing?.style,order:String(order)},...(existing?.mobileStyle?{mobileStyle:{...existing.mobileStyle,order:String(order)}}:{})};});
+    document.querySelectorAll('[data-visual-selected]').forEach(e=>e.removeAttribute('data-visual-selected'));card.setAttribute('data-visual-selected','true');send('instructor-reordered',{edits,selectedId:edits[destination].id});return;
+   }
    if(data.type==='parent'){const current=document.querySelector('[data-visual-selected]');const parent=current?.parentElement;if(parent&&selectorFor(parent))selectLayout(parent);return;}
    if(data.type==='configure'&&validVisualEdits(data.page?.edits)&&validVisualEdits(data.common?.edits)){
     editing=true;mode=data.mode==='browse'?'browse':data.mode==='layout'?'layout':'select';docs={page:data.page,common:data.common};apply();
