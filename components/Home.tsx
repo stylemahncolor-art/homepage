@@ -18,13 +18,13 @@ export function Home({locale,edit,news}:{locale:Locale;edit:PageEdit|null;news:N
 
  return <main id="main" className="home">
   <section className="editorial-hero wrap">
-   <p className="hero-kicker">PERSONAL COLOR &amp; IMAGE BRANDING</p>
+   <p className="hero-kicker">PERSONAL COLOR &amp; IMAGE BRANDING</p><button type="button" data-visual-background-control>{{kr:'배경 이미지 선택·교체',en:'Select / replace background',cn:'选择或更换背景图片',jp:'背景画像を選択・変更'}[locale]}</button>
    <div className="hero-heading editable-hero-heading">
     <div className="hero-title-block">
      <h1>{edit?.title||(locale==='kr'?t.hero.split('\n').slice(0,2).join('\n'):t.hero)}</h1>
      <p className="hero-association">{{kr:'국제퍼스널컬러이미지브랜딩협회',en:'International Personal Color & Image Branding Association',cn:'国际个人色彩与形象品牌协会',jp:'国際パーソナルカラーイメージブランディング協会'}[locale]}</p>
     </div>
-    <div className="hero-intro"><figure className="hero-logo-slot" data-placeholder={{kr:'첫 화면 배경 이미지',en:'Hero background image',cn:'首屏背景图片',jp:'メイン背景画像'}[locale]}><img src="/assets/hero-logo-placeholder.svg" alt="" width={480} height={200}/><button type="button" data-visual-background-control>{{kr:'배경 이미지 선택·교체',en:'Select / replace background',cn:'选择或更换背景图片',jp:'背景画像を選択・変更'}[locale]}</button></figure><p className="lead"><BrandText text={edit?.description||t.intro}/></p><More locale={locale} to="about">{d.aboutLink}</More></div>
+    <div className="hero-intro"><figure className="hero-logo-slot" data-placeholder={{kr:'첫 화면 배경 이미지',en:'Hero background image',cn:'首屏背景图片',jp:'メイン背景画像'}[locale]}><img src="/assets/hero-logo-placeholder.svg" alt="" width={480} height={200}/></figure><p className="lead"><BrandText text={edit?.description||t.intro}/></p><More locale={locale} to="about">{d.aboutLink}</More></div>
    </div>
    <div className="hero-spread">
     <figure className="hero-main-image">{edit?.image?<ResponsiveImage className="cms-hero-image" src={edit.image} alt={edit.title}/>:<Photo eager name="ipib-training-02.jpg" alt={v.lecture}/>}</figure>

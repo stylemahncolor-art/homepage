@@ -356,10 +356,10 @@
 
 /* Background is independent of text layout and stays behind all content. */
 .home .editorial-hero:has(.editable-hero-heading){isolation:isolate;overflow:hidden}
-.home .editable-hero-heading{position:static;isolation:auto;align-items:start}
+.home .editable-hero-heading{position:relative;isolation:isolate;align-items:start}
 .home .editable-hero-heading .hero-title-block,.home .editable-hero-heading .hero-intro>.lead,.home .editable-hero-heading .hero-intro>.text-link,.home .editorial-hero:has(.editable-hero-heading)>.hero-kicker,.home .editorial-hero:has(.editable-hero-heading)>.hero-spread{position:relative;z-index:1}
 .home .hero-logo-slot{position:absolute;inset:0;z-index:0;display:block;width:100%;height:100%;margin:0;overflow:hidden;pointer-events:none}
 .home .hero-logo-slot>img{display:block;width:100%;height:100%;object-fit:contain;object-position:right center;opacity:.18;pointer-events:none}
-.home .hero-logo-slot>button{display:none}
+.home .editorial-hero>[data-visual-background-control]{display:none}
 .visual-selecting .home .hero-logo-slot{outline:1px dashed #a4b6cc;outline-offset:-1px}
-.visual-selecting .home .hero-logo-slot>button{display:block;position:absolute;right:12px;top:8px;pointer-events:auto;border:1px solid #a4b6cc;background:#fff;border-radius:6px;padding:8px 12px;font-size:12px;color:#425873;cursor:pointer}
+.visual-selecting .home .editorial-hero>[data-visual-background-control]{display:block;position:absolute;z-index:2;right:12px;top:8px;pointer-events:auto;border:1px solid #a4b6cc;background:#fff;border-radius:6px;padding:8px 12px;font-size:12px;color:#425873;cursor:pointer}

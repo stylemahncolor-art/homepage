@@ -37,6 +37,6 @@ export function validVisualEdits(value:unknown):value is VisualEdit[]{
   if(!validTextWeights(e.translationSourceWeights,e.translationSource?.value.length||0))return false;
   if(e.kind==='layout')return /^[A-Z][A-Z0-9]*$/.test(e.source)&&e.value==='';
   if(e.kind==='text')return Number.isInteger(e.textIndex)&&e.textIndex>=0&&e.textIndex<100&&e.value.length<=10000&&validTextWeights(e.weights,e.value.length);
-  return e.kind==='image'&&validMediaPath(e.value)&&typeof e.alt==='string'&&e.alt.length<=300&&['cover','contain'].includes(e.fit)&&[e.x,e.y].every(n=>typeof n==='number'&&Number.isFinite(n)&&n>=0&&n<=100)&&typeof e.scale==='number'&&Number.isFinite(e.scale)&&e.scale>=1&&e.scale<=2;
+  return e.kind==='image'&&validMediaPath(e.value)&&typeof e.alt==='string'&&e.alt.length<=300&&['cover','contain'].includes(e.fit)&&[e.x,e.y].every(n=>typeof n==='number'&&Number.isFinite(n)&&n>=0&&n<=100)&&typeof e.scale==='number'&&Number.isFinite(e.scale)&&e.scale>=0.1&&e.scale<=2;
  });
 }
