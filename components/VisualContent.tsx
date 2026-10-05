@@ -44,7 +44,7 @@ export default function VisualContent(){
      textOriginals.set(node as Text,{source:edit.source,applied:edit.value});node.nodeValue=edit.value;
      if(edit.weights?.length){
       const wrapper=document.createElement('span');wrapper.dataset.visualInline='true';
-      let offset=0;for(const run of edit.weights){if(run.start>offset)wrapper.append(document.createTextNode(edit.value.slice(offset,run.start)));const span=document.createElement('span');span.textContent=edit.value.slice(run.start,run.end);span.style.setProperty('font-weight',String(run.weight),'important');wrapper.append(span);offset=run.end;}
+      let offset=0;for(const run of edit.weights){if(run.start>offset)wrapper.append(document.createTextNode(edit.value.slice(offset,run.start)));const span=document.createElement('span');span.textContent=edit.value.slice(run.start,run.end);span.style.setProperty('font-weight',String(run.weight),'important');if(run.fontStyle)span.style.setProperty('font-style',run.fontStyle,'important');wrapper.append(span);offset=run.end;}
       if(offset<edit.value.length)wrapper.append(document.createTextNode(edit.value.slice(offset)));
       node.replaceWith(wrapper);textOriginals.get(node as Text)!.wrapper=wrapper;inlineNodes.set(wrapper,node as Text);
      }
@@ -90,7 +90,7 @@ export default function VisualContent(){
    const target=event.target;if(target.closest('.admin-entry')){event.preventDefault();event.stopPropagation();return;}
    if(mode==='layout'){const container=target.closest('section,article,figure,div,main,header,footer');if(container){event.preventDefault();event.stopPropagation();event.stopImmediatePropagation();selectLayout(container);}return;}
    const image=target.closest('img');
-   const inline=target.closest<HTMLSpanElement>('[data-visual-inline]');
+   const inline=target.closest<HTMLSpanElement>('[data-visual-inline]')||Array.from(inlineNodes.keys()).find(wrapper=>wrapper.contains(target))||null;
    let node:Node|null=null;
    if(inline)node=inlineNodes.get(inline)||null;
    else if(!image){
