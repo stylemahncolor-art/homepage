@@ -89,7 +89,7 @@ export default function VisualContent(){
    if(mode==='browse'){if(event.target.closest('a')){event.preventDefault();event.stopPropagation();send('notice',{message:'다른 페이지는 위쪽 페이지 목록에서 선택해 주세요. 탭과 펼치기 버튼은 이 화면에서 사용할 수 있습니다.'});}return;}
    const target=event.target;if(target.closest('.admin-entry')){event.preventDefault();event.stopPropagation();return;}
    if(mode==='layout'){const container=target.closest('section,article,figure,div,main,header,footer');if(container){event.preventDefault();event.stopPropagation();event.stopImmediatePropagation();selectLayout(container);}return;}
-   const image=target.closest('img');
+   const image=target.closest('img')||target.closest('[data-visual-background-control]')?.parentElement?.querySelector('img');
    const inline=target.closest<HTMLSpanElement>('[data-visual-inline]')||Array.from(inlineNodes.keys()).find(wrapper=>wrapper.contains(target))||null;
    let node:Node|null=null;
    if(inline)node=inlineNodes.get(inline)||null;
