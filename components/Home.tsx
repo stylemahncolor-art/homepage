@@ -18,14 +18,14 @@ export function Home({locale,edit,news}:{locale:Locale;edit:PageEdit|null;news:N
 
  return <main id="main" className="home">
   <section className="editorial-hero wrap">
-   {locale==='kr' ? <div className="approved-hero">
-    <div className="approved-hero-art"><ResponsiveImage src="/assets/ipib-approved-hero-white.png" sizes="(max-width:1280px) 100vw, 1280px" width={1536} height={1024} alt="" fetchPriority="high"/></div>
-    <div className="approved-hero-accessible"><h1>{t.hero}</h1><p><BrandText text={t.intro}/></p></div>
-    <More locale={locale} to="about">{d.aboutLink}</More>
-   </div> : <>
-   <p className="hero-kicker">PERSONAL COLOR & IMAGE BRANDING</p>
-   <div className="hero-heading"><div className="hero-title-block"><h1>{(edit?.title||t.hero).split('\n').map((line,i)=><span className="hero-title-line" key={i}>{line}</span>)}</h1></div><div className="hero-intro"><p className="lead"><BrandText text={edit?.description||t.intro}/></p><More locale={locale} to="about">{d.aboutLink}</More></div></div>
-   </>}
+   <p className="hero-kicker">PERSONAL COLOR &amp; IMAGE BRANDING</p>
+   <div className="hero-heading editable-hero-heading">
+    <div className="hero-title-block">
+     <h1>{edit?.title||(locale==='kr'?t.hero.split('\n').slice(0,2).join('\n'):t.hero)}</h1>
+     <p className="hero-association">{{kr:'국제퍼스널컬러이미지브랜딩협회',en:'International Personal Color & Image Branding Association',cn:'国际个人色彩与形象品牌协会',jp:'国際パーソナルカラーイメージブランディング協会'}[locale]}</p>
+    </div>
+    <div className="hero-intro"><p className="lead"><BrandText text={edit?.description||t.intro}/></p><More locale={locale} to="about">{d.aboutLink}</More></div>
+   </div>
    <div className="hero-spread">
     <figure className="hero-main-image">{edit?.image?<ResponsiveImage className="cms-hero-image" src={edit.image} alt={edit.title}/>:<Photo eager name="ipib-training-02.jpg" alt={v.lecture}/>}</figure>
     <div className="hero-sidebar"><figure><div className="photo"><ResponsiveImage src="/assets/ipib-home-training.png" width={1152} height={2048} alt={v.practice} sizes="(max-width:768px) 90vw, 400px" loading="lazy"/></div></figure></div>
