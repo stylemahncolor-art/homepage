@@ -279,3 +279,29 @@
 .home .field-scene-2 .field-scene-crop>img{left:-108.408%;top:-46.3009%}
 .home .field-scene-3 .field-scene-crop>img{left:-108.408%;top:-175.9305%}
 .home .field-scene-4 .field-scene-crop>img{width:312.1951%;height:140.274%;left:-208.1209%;top:-20.5478%}
+
+/* Compact mobile footer; desktop layout stays unchanged. */
+@media(max-width:600px){
+ .site-footer{padding-top:22px}
+ .site-footer .footer-grid{gap:16px;padding-bottom:16px}
+ .site-footer .footer-brand{gap:12px;align-items:center}
+ .site-footer .footer-logo{width:94px;height:72px;margin:0}
+ .site-footer .footer-logo img{width:94px;height:94px;transform:translateY(-11px)}
+ .site-footer .footer-brand>p{margin:0;font-size:10px;line-height:1.65}
+ .site-footer .footer-information{padding:0;font-size:13px;line-height:1.65}
+ .site-footer .footer-information>.eyebrow{margin:0;font-size:10px}
+ .site-footer .footer-information strong{margin:7px 0 5px;font-size:13px;line-height:1.65}
+ .site-footer .footer-information>p:not(.eyebrow){margin:0;line-height:1.65}
+ .site-footer .footer-email{margin-top:5px;font-size:13px;line-height:1.65}
+ .site-footer .footer-nav{grid-template-columns:repeat(2,minmax(0,1fr));gap:0 16px;padding-top:10px;border-top:1px solid var(--line);font-size:12px}
+ .site-footer .footer-nav a{display:flex;align-items:center;min-height:40px;padding:6px 0;line-height:1.4;white-space:nowrap}
+ .site-footer .footer-bottom{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;gap:10px 12px;padding:14px 0 20px;border-top:1px solid var(--line);font-size:11px;line-height:1.7}
+ .site-footer .footer-bottom>p{margin:0}
+ .site-footer .footer-bottom>p:last-child{grid-column:1/-1;width:auto}
+ .site-footer .footer-bottom>div{display:block;min-width:0}
+ .site-footer .footer-bottom details{max-width:100%}
+ .site-footer .footer-bottom>div:has(details[open]){grid-column:1/-1}
+ .site-footer .footer-bottom details[open]{max-width:none}
+ .site-footer .footer-bottom details p{margin-top:8px;white-space:normal}
+ .site-footer .footer-bottom summary{padding:2px 0;white-space:nowrap}
+}
