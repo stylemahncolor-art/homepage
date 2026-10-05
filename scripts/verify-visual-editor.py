@@ -30,6 +30,8 @@ settings={'SUPABASE_URL':'http://127.0.0.1:3096','SUPABASE_ANON_KEY':'anon-test'
 vars_file=pathlib.Path('dist/server/.dev.vars')
 if vars_file.exists():raise RuntimeError('Refusing to overwrite existing runtime configuration')
 vars_file.write_text('\n'.join(f'{k}={v}' for k,v in settings.items())+'\n')
+# Mock integration never calls the paid/remote AI binding. Keep preview local.
+config_file=pathlib.Path('dist/server/wrangler.json');config_original=config_file.read_text();local_config=json.loads(config_original);local_config.pop('ai',None);config_file.write_text(json.dumps(local_config))
 process=subprocess.Popen(['./node_modules/.bin/vite','preview','--host','127.0.0.1','--port','3097'],env={**os.environ,**settings},stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
 base='http://127.0.0.1:3097';op=urllib.request.build_opener(urllib.request.ProxyHandler({}));cookie='ipib-admin-session=test-token'
 def call(path,data=None,auth=True,origin=base,raw=None,content_type='application/json'):
@@ -65,6 +67,15 @@ try:
  assert call('/api/admin/visual',body,origin='https://evil.example')[0]==403
  status,data=call('/api/admin/visual',body);assert status==200,(status,data);saved=json.loads(data)
  public=json.loads(call('/api/site-content?path=global&locale=kr',auth=False)[1]);assert public['page']['edits']==[edit]
+ cached={**edit,'source':'English original','value':'Previously translated text','translationSource':{'locale':'kr','value':edit['value'],'id':edit['id']}}
+ assert call('/api/admin/visual',{'path':'global','locale':'en','revision':None,'edits':[cached]})[0]==200
+ sync_body={'path':'global','from':'kr','to':'en','revision':saved['revision'],'resolved':[{**edit,'source':'English original'}]}
+ assert call('/api/admin/visual-sync',sync_body,auth=False)[0]==403
+ assert call('/api/admin/visual-sync',sync_body,origin='https://evil.example')[0]==403
+ status,data=call('/api/admin/visual-sync',sync_body);assert status==200,(status,data)
+ synced=json.loads(call('/api/site-content?path=global&locale=en',auth=False)[1])['page']['edits'][0]
+ assert synced['value']=='Previously translated text' and synced['source']=='English original'
+ assert call('/api/admin/visual-sync',{**sync_body,'revision':'stale'})[0]==409
  assert call('/api/admin/visual',body)[0]==409
  for change in [{'selector':'script'},{'kind':'image','value':'javascript:alert(1)'},{'textIndex':-1}]:
   assert call('/api/admin/visual',{**body,'revision':saved['revision'],'edits':[{**edit,**change}]})[0]==400
@@ -96,4 +107,4 @@ try:
  if os.environ.get('VISUAL_BROWSER_TEST')=='1':subprocess.run(['node','scripts/verify-visual-browser.cjs'],check=True)
  print('PASS: editor route, authentication, CSRF, persistent/public read, stale-write protection, input validation, real multipart upload, isolated upload failure, subsequent text save')
 finally:
- process.terminate();process.wait(timeout=15);server.shutdown();vars_file.unlink(missing_ok=True)
+ process.terminate();process.wait(timeout=15);server.shutdown();vars_file.unlink(missing_ok=True);config_file.write_text(config_original)

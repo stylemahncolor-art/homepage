@@ -316,3 +316,7 @@
  .home .level-system-compact .section-heading{margin-bottom:24px}
  .home .level-system-compact .section-heading h2{font-size:27px;margin-bottom:14px}
 }
+
+.branch-tabs [data-slot="tabs-content"][hidden]{display:none}
+
+.visual-sync-controls{display:flex;align-items:center;flex-wrap:wrap;gap:12px;padding:12px 16px;background:#fff;border:1px solid #e1e7ef}.visual-sync-controls label{display:flex;align-items:center;gap:8px}.visual-sync-controls input{width:auto}.visual-sync-controls p{margin:0;font-size:12px;color:#586477}

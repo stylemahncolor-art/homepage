@@ -11,5 +11,8 @@
   "vars": {
     "SUPABASE_MEDIA_BUCKET": "ipib-media",
     "SUPABASE_URL": "https://qjxjbfawjyrotugpyyon.supabase.co"
+  },
+  "ai": {
+    "binding": "AI"
   }
 }

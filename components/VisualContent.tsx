@@ -67,6 +67,14 @@ export default function VisualContent(){
   const message=(event:MessageEvent)=>{
    if(event.origin!==location.origin||event.source!==window.parent||window.parent===window||event.data?.channel!=='ipib-visual')return;
    const data=event.data;
+   if(data.type==='resolve'&&typeof data.requestId==='string'&&validVisualEdits(data.edits)){
+    const resolved:VisualEdit[]=[],missing:string[]=[];
+    for(const edit of data.edits){const element=locate(edit);if(!element){missing.push(edit.id);continue;}
+     if(edit.kind==='text'){const child=element.childNodes[edit.textIndex??-1];const node=child instanceof HTMLSpanElement?inlineNodes.get(child):child;if(!node||node.nodeType!==Node.TEXT_NODE){missing.push(edit.id);continue;}resolved.push({...edit,source:textOriginals.get(node as Text)?.source||node.nodeValue||''});}
+     else if(edit.kind==='image'&&element instanceof HTMLImageElement)resolved.push({...edit,source:element.getAttribute('data-content-source')||imageOriginals.get(element)?.src||element.getAttribute('src')||''});
+     else if(edit.kind==='layout')resolved.push({...edit,source:element.tagName});else missing.push(edit.id);
+    }send('resolved',{requestId:data.requestId,edits:resolved,missing});return;
+   }
    if(data.type==='parent'){const current=document.querySelector('[data-visual-selected]');const parent=current?.parentElement;if(parent&&selectorFor(parent))selectLayout(parent);return;}
    if(data.type==='configure'&&validVisualEdits(data.page?.edits)&&validVisualEdits(data.common?.edits)){
     editing=true;mode=data.mode==='browse'?'browse':data.mode==='layout'?'layout':'select';docs={page:data.page,common:data.common};apply();

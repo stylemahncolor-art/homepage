@@ -2,7 +2,7 @@ import {validVisualStyle,type VisualStyle} from './visual-style';
 import {validTextWeights,type TextWeight} from './text-weight';
 export type VisualEdit = {
  id:string; kind:'text'|'image'|'layout'; selector:string; source:string; value:string;
- style?:VisualStyle;mobileStyle?:VisualStyle;textIndex?:number;weights?:TextWeight[]; alt?:string; fit?:'cover'|'contain'; x?:number; y?:number; scale?:number;
+ style?:VisualStyle;mobileStyle?:VisualStyle;textIndex?:number;weights?:TextWeight[];translationSource?:{locale:string;value:string;id:string};translationSourceWeights?:TextWeight[]; alt?:string; fit?:'cover'|'contain'; x?:number; y?:number; scale?:number;
 };
 export type VisualDocument = {edits:VisualEdit[]; revision:string|null};
 export const emptyDocument=():VisualDocument=>({edits:[],revision:null});
@@ -17,6 +17,8 @@ export function validVisualEdits(value:unknown):value is VisualEdit[]{
   if(typeof e.selector!=='string'||e.selector.length>1200||!/^(main|header|footer)( > [a-z][a-z0-9-]*:nth-of-type\([1-9][0-9]*\))*$/.test(e.selector))return false;
   if(typeof e.source!=='string'||e.source.length>10000||typeof e.value!=='string')return false;
   if(!validVisualStyle(e.style)||!validVisualStyle(e.mobileStyle))return false;
+  if(e.translationSource&&(!['kr','en','cn','jp'].includes(e.translationSource.locale)||typeof e.translationSource.value!=='string'||e.translationSource.value.length>10000||typeof e.translationSource.id!=='string'||!/^[a-z0-9-]{1,80}$/.test(e.translationSource.id)))return false;
+  if(!validTextWeights(e.translationSourceWeights,e.translationSource?.value.length||0))return false;
   if(e.kind==='layout')return /^[A-Z][A-Z0-9]*$/.test(e.source)&&e.value==='';
   if(e.kind==='text')return Number.isInteger(e.textIndex)&&e.textIndex>=0&&e.textIndex<100&&e.value.length<=10000&&validTextWeights(e.weights,e.value.length);
   return e.kind==='image'&&validMediaPath(e.value)&&typeof e.alt==='string'&&e.alt.length<=300&&['cover','contain'].includes(e.fit)&&[e.x,e.y].every(n=>typeof n==='number'&&Number.isFinite(n)&&n>=0&&n<=100)&&typeof e.scale==='number'&&Number.isFinite(e.scale)&&e.scale>=1&&e.scale<=2;

@@ -1,5 +1,6 @@
 'use client';
 import StyleControls from './StyleControls';
+import {resolveVisualLanguage} from '@/lib/resolve-visual-language';
 import InlineTextEditor from './InlineTextEditor';
 import {prepareImage} from '@/lib/prepare-image';
 import {useCallback,useEffect,useRef,useState} from 'react';
@@ -16,6 +17,7 @@ export default function VisualEditor(){
  const [docs,setDocs]=useState<Documents>({page:emptyDocument(),common:emptyDocument()});
  const [dirty,setDirty]=useState({page:false,common:false}),[selected,setSelected]=useState<Selection|null>(null);
  const [mode,setMode]=useState<'select'|'browse'|'layout'>('select'),[mobile,setMobile]=useState(false),[busy,setBusy]=useState(false),[loaded,setLoaded]=useState(false),[ready,setReady]=useState(false),[message,setMessage]=useState(''),[reload,setReload]=useState(0);
+ const [autoSync,setAutoSync]=useState(true),[syncPending,setSyncPending]=useState(false);
  const [fullscreen,setFullscreen]=useState(true),[styleMobile,setStyleMobile]=useState(false);
  const iframe=useRef<HTMLIFrameElement>(null),draftKey=`ipib-visual-draft:${locale}:${path}`;
  const hasChanges=dirty.page||dirty.common;
@@ -50,6 +52,15 @@ export default function VisualEditor(){
   setDirty(current=>({...current,[selected.scope]:true}));
  };
  const restore=()=>{if(!selected)return;setDocs(current=>({...current,[selected.scope]:{...current[selected.scope],edits:current[selected.scope].edits.filter(e=>e.id!==selected.edit.id)}}));setDirty(current=>({...current,[selected.scope]:true}));setSelected(null);setMessage('기본 내용으로 되돌렸습니다. 저장을 눌러 적용하세요.');};
+ const syncDocument=async(scope:'page'|'common',document:VisualDocument)=>{
+  const results=await Promise.allSettled(locales.filter(l=>l!==locale).map(async to=>{
+   const resolved=await resolveVisualLanguage(`/${to}${path==='home'?'':`/${path}`}`,document.edits);
+   const response=await fetch('/api/admin/visual-sync',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({path:scope==='page'?path:'common',from:locale,to,revision:document.revision,resolved})});
+   const result=await response.json();if(!response.ok)throw Error(`${languages[to]}: ${result.error}`);
+  }));
+  const failures=results.filter((r):r is PromiseRejectedResult=>r.status==='rejected');if(failures.length)throw Error(failures.map(r=>r.reason.message).join(' '));
+ };
+ const retrySync=async()=>{if(busy||hasChanges||!loaded)return;setBusy(true);setMessage('다른 언어를 번역·동기화하는 중입니다.');try{await syncDocument('page',docs.page);await syncDocument('common',docs.common);setSyncPending(false);setMessage('모든 언어 동기화 완료.');}catch(e){setSyncPending(true);setMessage(e instanceof Error?e.message:'동기화하지 못했습니다.');}finally{setBusy(false);}};
  const save=async()=>{
   if(!loaded||busy)return;setBusy(true);setMessage('변경 내용을 저장하는 중입니다.');let saved=0;const nextDocs={...docs},nextDirty={...dirty};
   try{
@@ -57,10 +68,11 @@ export default function VisualEditor(){
     const response=await fetch('/api/admin/visual',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({path:scope==='page'?path:'common',locale,...nextDocs[scope]})});
     const data=await response.json();if(!response.ok)throw Error(data.error);
     nextDocs[scope]=data;nextDirty[scope]=false;saved++;setDocs({...nextDocs});setDirty({...nextDirty});
+    if(autoSync){setSyncPending(true);setMessage('현재 언어 저장 완료. 다른 언어를 번역·동기화하는 중입니다.');await syncDocument(scope,data);setSyncPending(false);}
    }
    try{sessionStorage.removeItem(draftKey);}catch{}
-   setMessage('저장 완료. 방문자가 페이지를 열거나 새로고침하면 반영됩니다. 별도 배포는 필요하지 않습니다.');
-  }catch(e){setMessage(`${saved?'일부 영역은 저장되었습니다. ':''}${e instanceof Error?e.message:'저장에 실패했습니다.'} 미저장 내용은 이 화면에 유지됩니다.`);}finally{setBusy(false);}
+   setMessage(autoSync?'저장·모든 언어 동기화 완료. 방문자 화면을 새로고침하면 반영됩니다.':'현재 언어 저장 완료. 자동 동기화는 꺼져 있습니다.');
+  }catch(e){setMessage(`${saved?'일부 영역은 저장되었습니다. ':''}${e instanceof Error?e.message:'저장에 실패했습니다.'} 미저장 내용은 유지됩니다. 다른 언어 반영이 끝나지 않았다면 ‘다른 언어 동기화 재시도’를 눌러 주세요.`);}finally{setBusy(false);}
  };
  const upload=async(file:File)=>{
   if(!selected||selected.edit.kind!=='image')return;
@@ -74,6 +86,7 @@ export default function VisualEditor(){
  return <main className={`visual-admin ${fullscreen?'visual-expanded':''}`} id="main">
   <header className="visual-toolbar"><div><p className="eyebrow">IPIB ADMIN</p><h1>전체 페이지 편집</h1><p>화면에서 문구·사진·영역을 클릭하면 오른쪽 편집 도구가 열립니다. 변경 모습은 즉시 미리보기에 나타납니다.</p></div><a href="/admin/news" onClick={e=>{if(hasChanges&&!confirm('저장하지 않은 변경사항이 있습니다. 소식 관리로 이동할까요?'))e.preventDefault();}}>소식·게시글 관리</a><form action="/api/admin/logout" method="post" onSubmit={e=>{if(hasChanges&&!confirm('저장하지 않은 변경사항이 있습니다. 로그아웃할까요?'))e.preventDefault();}}><button type="submit">로그아웃</button></form></header>
   <div className="visual-controls"><label>페이지<select disabled={busy} value={path} onChange={e=>navigate(e.target.value,locale)}>{basePages.map(([value,label])=><option key={value} value={value}>{label}</option>)}{news.filter(n=>n.status!=='draft').map(n=><option key={n.slug} value={`news/${n.slug}`}>소식 · {n.title.kr||n.slug}</option>)}</select></label><label>언어<select disabled={busy} value={locale} onChange={e=>navigate(path,e.target.value as Locale)}>{locales.map(l=><option key={l} value={l}>{languages[l]}</option>)}</select></label><button type="button" aria-pressed={mode==='select'} disabled={!loaded||busy} onClick={()=>setMode('select')}>내용 선택</button><button type="button" aria-pressed={mode==='browse'} disabled={!loaded||busy} onClick={()=>setMode('browse')}>탐색 · 탭 선택</button><button type="button" aria-pressed={mode==='layout'} disabled={!loaded||busy} onClick={()=>setMode('layout')}>영역 · 레이아웃 선택</button><button type="button" onClick={()=>setFullscreen(!fullscreen)}>{fullscreen?'일반 화면':'편집 화면 크게'}</button><button type="button" aria-pressed={mobile} onClick={()=>setMobile(!mobile)}>{mobile?'PC 화면':'모바일 화면'}</button><a href={url} target="_blank" rel="noopener noreferrer">방문자 화면 ↗</a><button className="admin-save" disabled={busy||!loaded||!hasChanges} onClick={save}>{busy?'처리 중…':hasChanges?'변경 내용 저장':'저장됨'}</button></div>
+  <div className="visual-sync-controls"><label><input type="checkbox" checked={autoSync} disabled={busy} onChange={e=>setAutoSync(e.target.checked)}/> 저장할 때 다른 언어 자동 번역·사진·서식 동기화</label><button type="button" disabled={busy||!loaded||hasChanges} onClick={retrySync}>{syncPending?'다른 언어 동기화 재시도':'저장된 내용 모든 언어 동기화'}</button><p>번역 문구를 언어별로 다듬을 때는 자동 동기화를 끄세요.</p></div>
   <p className="admin-message" role="status">{message}</p>
   <div className="visual-workspace"><section className={`visual-preview ${mobile?'is-mobile':''}`} aria-label="페이지 미리보기"><iframe key={`${locale}:${path}:${reload}`} ref={iframe} src={url} title="편집할 홈페이지" onLoad={()=>configure()}/></section>
    <aside className="visual-inspector"><h2>{selected?(selected.edit.kind==='image'?'사진 편집':selected.edit.kind==='layout'?'영역 레이아웃':'문구 편집'):'수정할 항목 선택'}</h2>

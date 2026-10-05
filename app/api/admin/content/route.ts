@@ -1,6 +1,7 @@
 import {isAdmin,sameOrigin} from '@/lib/admin-auth';
 import {getNews,getPageEdits,saveNews,savePageEdit,saveNewsOrder} from '@/lib/cms';
-import {locales} from '@/content/site';
+import {locales,type Locale} from '@/content/site';
+import {translateText} from '@/lib/translation';
 
 export const dynamic='force-dynamic';
 const allowedPages=['home','about','education','certification','global','news','contact'];
@@ -26,7 +27,7 @@ export async function POST(request:Request){
   }else if(data.kind==='page'){
    const p=data.value;
    if(!allowedPages.includes(p?.page)||!locales.includes(p?.locale)||!validText(p?.title,180)||!validText(p?.description,4000)||!validImage(p?.image))return fail('페이지 입력을 확인해 주세요.',400);
-   await savePageEdit({page:p.page,locale:p.locale,title:p.title,description:p.description,image:p.image??null});
+   if(data.syncLanguages){const translated=await Promise.all(locales.map(async locale=>({...p,locale,title:await translateText(p.title,p.locale,locale),description:await translateText(p.description,p.locale,locale),image:p.image??null})));for(const row of translated)await savePageEdit(row);}else await savePageEdit({page:p.page,locale:p.locale,title:p.title,description:p.description,image:p.image??null});
   }else if(data.kind==='news'){
    const n=data.value;
    if(!/^[a-z0-9-]{3,80}$/.test(n?.slug)||!Number.isInteger(n?.category)||n.category<0||n.category>4||!validImage(n?.image)||!['published','draft'].includes(n?.status))return fail('소식 정보를 확인해 주세요.',400);
@@ -34,6 +35,7 @@ export async function POST(request:Request){
    n.body??={kr:'',en:'',cn:'',jp:''};
    for(const field of ['title','description','body'])if(!n[field]||!locales.every(locale=>validText(n[field][locale],field==='body'?15000:field==='title'?180:1500)))return fail('네 언어의 제목과 본문을 확인해 주세요.',400);
    if(n.source!==undefined&&n.source!==null&&(!validText(n.source,500)||!/^https:\/\//.test(n.source)))return fail('외부 링크를 확인해 주세요.',400);
+   if(data.syncLanguages&&locales.includes(data.locale)){const from=data.locale as Locale;const previous=(await getNews(true)).find(item=>item.slug===n.slug);for(const field of ['title','description','body'] as const){if(n[field][from]!==previous?.[field]?.[from]||locales.some(l=>!n[field][l])){const values=await Promise.all(locales.map(async l=>[l,await translateText(n[field][from],from,l)] as const));for(const [l,value] of values)n[field][l]=value;}}}
    await saveNews(n);
   }else return fail('저장할 항목을 확인해 주세요.',400);
   return Response.json({ok:true});
