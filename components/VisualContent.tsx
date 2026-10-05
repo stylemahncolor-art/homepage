@@ -13,6 +13,7 @@ export default function VisualContent(){
   if(!['kr','en','cn','jp'].includes(locale))return;
   let docs:{page:VisualDocument;common:VisualDocument}={page:emptyDocument(),common:emptyDocument()};
   let active=true,editing=false,mode='select',frame=0;
+  const detailOriginals=new Map<HTMLDetailsElement,boolean>();
   const styleOriginals=new Map<HTMLElement,string|null>();
   const textOriginals=new Map<Text,{source:string;applied:string}>();
   const imageOriginals=new Map<HTMLImageElement,{src:string;srcset:string|null;style:string|null;alt:string;applied:string}>();
@@ -62,6 +63,8 @@ export default function VisualContent(){
    if(data.type==='parent'){const current=document.querySelector('[data-visual-selected]');const parent=current?.parentElement;if(parent&&selectorFor(parent))selectLayout(parent);return;}
    if(data.type==='configure'&&validVisualEdits(data.page?.edits)&&validVisualEdits(data.common?.edits)){
     editing=true;mode=data.mode==='browse'?'browse':data.mode==='layout'?'layout':'select';docs={page:data.page,common:data.common};apply();
+    // Reveal collapsed content in the editor so its text can be selected.
+    if(mode!=='browse')document.querySelectorAll<HTMLDetailsElement>('main details,footer.site-footer details').forEach(detail=>{if(!detailOriginals.has(detail))detailOriginals.set(detail,detail.open);detail.open=true;});
     document.documentElement.classList.toggle('visual-selecting',mode!=='browse');
    }
   };
@@ -96,6 +99,7 @@ export default function VisualContent(){
   fetch(`/api/site-content?path=${encodeURIComponent(path)}&locale=${locale}`,{cache:'no-store',signal:abort.signal}).then(async r=>{if(!r.ok)return;const data=await r.json();if(active&&!editing&&validVisualEdits(data.page?.edits)&&validVisualEdits(data.common?.edits))docs=data;}).catch(()=>{}).finally(()=>{if(active){apply();send('ready');}});
   return ()=>{active=false;abort.abort();cancelAnimationFrame(frame);observer.disconnect();window.removeEventListener('resize',resize);for(const [element,style] of styleOriginals){if(element.isConnected){if(style===null)element.removeAttribute('style');else element.setAttribute('style',style);}}window.removeEventListener('message',message);document.removeEventListener('click',click,true);for(const [node,original] of textOriginals){if(node.isConnected&&node.nodeValue===original.applied)node.nodeValue=original.source;}
    for(const [image,original] of imageOriginals){if(image.isConnected&&image.getAttribute('src')===original.applied){image.setAttribute('src',original.src);if(original.srcset===null)image.removeAttribute('srcset');else image.setAttribute('srcset',original.srcset);if(original.style===null)image.removeAttribute('style');else image.setAttribute('style',original.style);image.alt=original.alt;}}
+   for(const [detail,open] of detailOriginals){if(detail.isConnected)detail.open=open;}
    document.documentElement.classList.remove('visual-selecting');document.querySelectorAll('[data-visual-selected]').forEach(e=>e.removeAttribute('data-visual-selected'));};
  },[pathname]);
  return null;

@@ -27,7 +27,7 @@ export const kr = {
   newsTitle:'IPIB 소식', newsText:'IPIB의 교육 현장과 협회 활동, 국내외 교류 소식을 전합니다.', newsItems:['공식 블로그 · 교육 및 협회 소식','글로벌 교류 · MOU 아카이브','자격과정 · 커리큘럼 안내'], newsCategories:['OFFICIAL CHANNEL','GLOBAL ACTIVITIES','EDUCATION UPDATE'],
   contactTitle:'교육과 자격 과정이 궁금하신가요?', contactText:'교육, 자격과정, 기관 협력에 관한 문의를 공식 채널로 연결합니다.', contactTypes:['교육 문의','자격 인증 문의','기관 및 파트너십 문의'], emailCta:'이메일로 문의', kakaoCta:'카카오 채널',
   legalName:'주식회사 국제퍼스널컬러이미지브랜딩협회', representative:'대표 김만희', registration:'사업자등록번호 810-87-03370', address:'서울특별시 강남구 청담동 120-3 대신빌딩 2층 202호',
-  originalSite:'기존 공식 홈페이지', privacy:'개인정보 안내', privacyText:'이 미리보기 사이트는 문의 내용을 직접 수집하거나 저장하지 않습니다. 이메일 및 외부 채널 이용 시 해당 서비스의 개인정보 처리방침이 적용됩니다.', photoPlaceholder:'실제 교육 사진 준비 중', photoSub:'IPIB 교육 현장 이미지로 교체 예정',
+  originalSite:'기존 공식 홈페이지', privacy:'개인정보 안내', privacyText:'IPIB 공식 홈페이지는 문의 내용을 직접 수집하거나 저장하지 않습니다. 이메일 및 외부 채널 이용 시 해당 서비스의 개인정보 처리방침이 적용됩니다.', photoPlaceholder:'실제 교육 사진 준비 중', photoSub:'IPIB 교육 현장 이미지로 교체 예정',
   more:'자세히 보기', external:'기존 공식 페이지로 이동', rights:'All rights reserved.',
 };
 export type Dictionary = typeof kr;
