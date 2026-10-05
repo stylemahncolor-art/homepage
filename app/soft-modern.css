@@ -309,14 +309,23 @@
 /* Match the homepage level overview to the adjacent certification summary. */
 .home .level-system-compact{padding-top:40px;padding-bottom:56px}
 .home .level-system-compact .section-heading{margin-bottom:28px}
-.home .level-system-compact .section-heading h2{font-size:30px;line-height:1.4;margin-top:16px;margin-bottom:18px}
-.home .level-system-compact .section-heading>.lead{font-size:16px;line-height:1.8;color:var(--ink);margin:0;white-space:pre-line}
+.home .level-system-compact .section-heading h2{margin-top:16px;margin-bottom:18px}
+.home .level-system-compact .section-heading>.lead{margin:0;white-space:pre-line}
 @media(max-width:600px){
  .home .level-system-compact{padding-top:32px;padding-bottom:40px}
  .home .level-system-compact .section-heading{margin-bottom:24px}
- .home .level-system-compact .section-heading h2{font-size:27px;margin-bottom:14px}
+ .home .level-system-compact .section-heading h2{margin-bottom:14px}
 }
 
 .branch-tabs [data-slot="tabs-content"][hidden]{display:none}
 
 .visual-sync-controls{display:flex;align-items:center;flex-wrap:wrap;gap:12px;padding:12px 16px;background:#fff;border:1px solid #e1e7ef}.visual-sync-controls label{display:flex;align-items:center;gap:8px}.visual-sync-controls input{width:auto}.visual-sync-controls p{margin:0;font-size:12px;color:#586477}
+
+/* Homepage typography: shared sizes by content role, in every language. */
+.home{--home-title-size:40px;--home-subtitle-size:28px;--home-card-title-size:22px;--home-body-size:18px}
+.home :is(.institution-intro h2,.learning-heading h2,.level-system-compact .section-heading h2,.global-heading h2,.journal-hub .section-heading h2,.partnership h2){font-size:var(--home-title-size);font-weight:800;line-height:1.35;letter-spacing:-.035em}
+.home .certification-summary h3{font-size:var(--home-subtitle-size);font-weight:800;line-height:1.4}
+.home :is(.home-news-card h3,.mou-teaser h3){font-size:var(--home-card-title-size);font-weight:700;line-height:1.5}
+.home :is(.institution-intro p:not(.eyebrow),.learning-fields>.lead,.certification-summary>p:not(.eyebrow),.level-system-compact .section-heading>.lead,.global-summary>.lead,.partnership-grid>div:last-child>p){font-size:var(--home-body-size);font-weight:400;line-height:1.8;color:var(--muted)}
+.home .level-system-compact .level-copy h3{font-size:18px;line-height:1.5}
+@media(max-width:768px){.home{--home-title-size:28px;--home-subtitle-size:24px;--home-card-title-size:20px;--home-body-size:16px}.home .level-system-compact .level-copy h3{font-size:16px}}
