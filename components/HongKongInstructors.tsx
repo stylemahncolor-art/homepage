@@ -16,15 +16,24 @@ const profiles = [
     cn: ['个人色彩分析师 Level 2', '体型顾问 Level 1', '香港运动服饰品牌 Sesamism 创始人', '时尚行业经验超过7年'],
     jp: ['パーソナルカラーアナリスト Level 2', 'ボディフィットコンサルタント Level 1', '香港のアクティブウェアブランド Sesamism の創設者', 'ファッション業界で7年以上の経験'],
   },
+  {
+    id: 'vincci-wu', name: 'Vincci Wu', image: '/api/media/e50835ac-36bd-4806-ae32-c08ad984e34b',
+    kr: ['HAN Beauty 메이크업 아티스트', '퍼스널컬러 · 골격 바디핏 분석가', '퍼스널컬러 · 골격 바디핏 분석 Level 1·2', '메이크업 작업'],
+    en: ['Makeup Artist at HAN Beauty', 'Personal Color & Bone Bodyfit Analyst', 'Personal Color & Bone Bodyfit Analysis Levels 1 & 2', 'Makeup Work'],
+    cn: ['HAN Beauty 化妆师', '个人色彩与骨骼体型分析师', '个人色彩与骨骼体型分析 Level 1、2', '化妆工作'],
+    jp: ['HAN Beauty メイクアップアーティスト', 'パーソナルカラー・骨格ボディフィットアナリスト', 'パーソナルカラー・骨格ボディフィット分析 Level 1・2', 'メイクアップの仕事'],
+  },
 ];
 
 export function HongKongInstructors({locale}: {locale: Locale}) {
   return <div className="branch-instructors">{profiles.map(profile =>
-    <article className="branch-instructor" key={profile.id}>
+    <article className={`branch-instructor${profile.id==='vincci-wu'?' instructor-vincci-wu':''}`} key={profile.id}>
       <div className={`instructor-photo instructor-photo-${profile.id}`}><ResponsiveImage sizes="(max-width:600px) 130px, 190px" src={profile.image} alt={profile.name} width={136} height={184} loading="lazy" /></div>
       <div className="instructor-content">
         <header className="instructor-heading"><h5>{profile.name}</h5><p className="instructor-position">{profile.id==='biance-chan'
           ? ({kr:'HAN Beauty 중국·홍콩 대표',en:'Founder & CEO of HAN Beauty China & Hong Kong',cn:'HAN Beauty 中国及香港创始人兼首席执行官',jp:'HAN Beauty 中国・香港の創設者・代表'})[locale]
+          : profile.id==='vincci-wu'
+          ? ({kr:'퍼스널컬러 뷰티 전문가',en:'Personal Color & Beauty Expert',cn:'个人色彩与美妆专家',jp:'パーソナルカラー・ビューティー専門家'})[locale]
           : ({kr:'Sesamism 설립자 · 패션 전문가',en:'Founder of Sesamism · Fashion professional',cn:'Sesamism 创始人 · 时尚专业人士',jp:'Sesamism 創設者・ファッション専門家'})[locale]}</p></header>
         <ul className="instructor-career">{profile[locale].map(line => <li key={line}>{line}</li>)}</ul>
       </div>

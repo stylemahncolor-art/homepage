@@ -364,6 +364,10 @@
 .visual-selecting .home .hero-logo-slot{outline:1px dashed #a4b6cc;outline-offset:-1px}
 .visual-selecting .home .editorial-hero>[data-visual-background-control]{display:block;position:absolute;z-index:2;right:12px;top:8px;pointer-events:auto;border:1px solid #a4b6cc;background:#fff;border-radius:6px;padding:8px 12px;font-size:12px;color:#425873;cursor:pointer}
 
+/* New Hong Kong expert follows the two existing profiles; editor order can override it. */
+.branch-instructor.instructor-vincci-wu{order:2}
+.branch-instructor .instructor-photo-vincci-wu img{object-fit:cover;object-position:center top}
+
 /* One edge-to-edge opening photograph on mobile; retain both on desktop. */
 @media(max-width:768px){
  .home .editorial-hero:has(.editable-hero-heading){width:100%;max-width:none;padding-inline:20px}
